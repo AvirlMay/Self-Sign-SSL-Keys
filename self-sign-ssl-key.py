@@ -42,9 +42,17 @@ def main():
         if choise == '3':
             clear_console()
             print('==========生成新SSL证书=========')
+            print('使用前必须生成过CA证书')
+            print('(不必每次都使用新CA证书)')
+            use_added_key = input('是否需要导入私钥?(y/N): ')
             ssl_name: str = input('请输入您的SSL文件名: ')
+            print('备注: 将在程序运行目录下生成SSL文件')
+            print(f'若您导入私钥, 请命名为{ssl_name}.key')
             ssl_time: str = input('请输入此SSL证书的有效时长: ')
-            generate_ssl(ssl_name, info=get_info(), time=int(ssl_time))
+            if use_added_key == 'y':
+                generate_ssl(ssl_name, info=get_info(), time=int(ssl_time), use_added_keys=True)
+            if use_added_key == 'n':
+                generate_ssl(ssl_name, info=get_info(), time=int(ssl_time))
             clear_console()
             print('已生成新SSL证书!\n')
 
@@ -63,7 +71,7 @@ def get_info(): # 模块：请求输入证书信息
     if a == 'y':
         return '"/C=CN/L=Default City/CN=Self-Signed Root CA"'
     else:
-        print('---------开始配置CA机构信息---------')
+        print('---------开始配置证书机构信息---------')
         C: str = input('请输入国家: ')
         ST: str = input('请输入省份: ')
         L: str = input('请输入城市: ')
@@ -81,7 +89,7 @@ def generate_ca(ca_info: str = '"/C=CN/L=Default City/CN=Self-Signed Root CA"', 
     return
 
 
-def generate_ssl(ssl_name: str, info: str = '"/C=CN/L=Default City/CN=Self-Signed Cert"',ca_cert_path:str = 'ca/cert.crt', ca_key_path:str = 'ca/privatekey.key', time: int = 90):
+def generate_ssl(ssl_name: str, info: str = '"/C=CN/L=Default City/CN=Self-Signed Cert"',ca_cert_path:str = 'ca/cert.crt', ca_key_path:str = 'ca/privatekey.key', time: int = 90, use_added_keys: bool = True):
     workpath: str = '.'
 
     private_key_path: str = f'{workpath}/{ssl_name}.key'
@@ -90,7 +98,8 @@ def generate_ssl(ssl_name: str, info: str = '"/C=CN/L=Default City/CN=Self-Signe
 
     make_config()
 
-    generate_private_key(private_key_path)
+    if use_added_keys == False:
+        generate_private_key(private_key_path)
     system(f'openssl req -new -sha256 -key {private_key_path} -subj {info} -out {csr_path}')
     system(f'openssl x509 -req -sha256 -in {csr_path} -CA {ca_cert_path} -CAkey {ca_key_path} -CAcreateserial -days {time} -extfile v3.ext -out {cert_path}')
 
