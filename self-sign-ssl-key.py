@@ -6,9 +6,8 @@ def clear_console():
     return
 
 def main():
+    clear_console()
     while True:
-        clear_console()
-
         # 开始询问所需功能
         print('==========本地自签证书系统==========')
         print('使用前必须先安装 openssl3 系统库!')
@@ -49,10 +48,12 @@ def main():
             print('备注: 将在程序运行目录下生成SSL文件')
             print(f'若您导入私钥, 请命名为{ssl_name}.key')
             ssl_time: str = input('请输入此SSL证书的有效时长: ')
-            if use_added_key == 'y':
+            if use_added_key == 'y' or use_added_key == 'Y':
                 generate_ssl(ssl_name, info=get_info(), time=int(ssl_time), use_added_keys=True)
-            if use_added_key == 'n':
-                generate_ssl(ssl_name, info=get_info(), time=int(ssl_time))
+            if use_added_key == 'n' or use_added_key == 'N':
+                generate_ssl(ssl_name, info=get_info(), time=int(ssl_time), use_added_keys=False)
+            else:
+                print('配置出错, 请重试')
             clear_console()
             print('已生成新SSL证书!\n')
 
@@ -89,7 +90,7 @@ def generate_ca(ca_info: str = '"/C=CN/L=Default City/CN=Self-Signed Root CA"', 
     return
 
 
-def generate_ssl(ssl_name: str, info: str = '"/C=CN/L=Default City/CN=Self-Signed Cert"',ca_cert_path:str = 'ca/cert.crt', ca_key_path:str = 'ca/privatekey.key', time: int = 90, use_added_keys: bool = True):
+def generate_ssl(ssl_name: str, info: str = '"/C=CN/L=Default City/CN=Self-Signed Cert"',ca_cert_path:str = 'ca/cert.crt', ca_key_path:str = 'ca/privatekey.key', time: int = 90, use_added_keys: bool = False):
     workpath: str = '.'
 
     private_key_path: str = f'{workpath}/{ssl_name}.key'
@@ -98,7 +99,7 @@ def generate_ssl(ssl_name: str, info: str = '"/C=CN/L=Default City/CN=Self-Signe
 
     make_config()
 
-    if use_added_keys == False:
+    if not use_added_keys:
         generate_private_key(private_key_path)
     system(f'openssl req -new -sha256 -key {private_key_path} -subj {info} -out {csr_path}')
     system(f'openssl x509 -req -sha256 -in {csr_path} -CA {ca_cert_path} -CAkey {ca_key_path} -CAcreateserial -days {time} -extfile v3.ext -out {cert_path}')
