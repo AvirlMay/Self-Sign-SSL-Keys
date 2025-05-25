@@ -45,7 +45,7 @@ def main():
             print('使用前必须生成过CA证书')
             print('(不必每次都使用新CA证书)')
             use_added_key = input('是否需要导入私钥?(y/N): ')
-            ssl_name: str = input('请输入您的SSL文件名: ')
+            ssl_name: str = input('请输入您的SSL文件名(不需要输入后缀名!): ')
             print('备注: 将在程序运行目录下生成SSL文件')
             print(f'若您导入私钥, 请命名为{ssl_name}.key')
             ssl_time: str = input('请输入此SSL证书的有效时长: ')
